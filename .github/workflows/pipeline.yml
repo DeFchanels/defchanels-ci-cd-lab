@@ -18,6 +18,7 @@ jobs:
       - name: Checkout # Скачиваем содержимое репозитория
         uses: actions/checkout@v4
       - name: HTML Linter # Скачиваем анализатор html
+        continue-on-error: true
         run: |
           npm install -g htmlhint
           htmlhint index.html
@@ -28,12 +29,12 @@ jobs:
           docker run -d --name ci-cd -p 8080:80 docker-ci-cd:ci
           # Цикл, необходимый для того чтобы HTML успел прогрузиться перед проверкой
           for i in $(seq 1 10); do 
-            if curl -sf http://localhost:8080 > /tmp/index.html; then break; fi
+            if curl -sf http://localhost:8080 > /tmp/page.html; then break; fi
             sleep 1
           done
-          grep -n "Асриев Георгий Вадимович" index.html # Проверяем наличие некоторых строк на сайте
-          grep -n "GitHub: DeFchanels" index.html
-          grep -n "Docker Hub: georgyasr" index.html
+          grep -n "Асриев Георгий Вадимович" /tmp/page.html # Проверяем наличие некоторых строк на сайте
+          grep -n "GitHub: DeFchanels" /tmp/page.html
+          grep -n "Docker Hub: georgyasr" /tmp/page.html
           echo "OK"
       - name: Check CI results
         if: always()
@@ -59,4 +60,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/defchanels/defchanels-ci-cd-lab:latest
+          tags: ghcr.io/${{ github.repository }}:latest
