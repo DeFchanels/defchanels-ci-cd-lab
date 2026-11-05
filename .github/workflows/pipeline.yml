@@ -28,7 +28,7 @@ jobs:
           docker run -d --name ci-cd -p 8080:80 docker-ci-cd:ci
           # Цикл, необходимый для того чтобы HTML успел прогрузиться перед проверкой
           for i in $(seq 1 10); do 
-            if curl -sf http://localhost:8080 > /tmp/page.html; then break; fi
+            if curl -sf http://localhost:8080 > /tmp/index.html; then break; fi
             sleep 1
           done
           grep -n "Асриев Георгий Вадимович" page.html # Проверяем наличие некоторых строк на сайте
