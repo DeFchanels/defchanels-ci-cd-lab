@@ -1,0 +1,62 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout # Скачиваем содержимое репозитория
+        uses: actions/checkout@v4
+      - name: HTML Linter # Скачиваем анализатор html
+        run: |
+          npm install -g htmlhint
+          htmlhint index.html
+      - name: Build Docker image
+        run: docker build -t docker-ci-cd:ci .
+      - name: Smoke test container
+        run: |
+          docker run -d --name ci-cd -p 8080:80 docker-ci-cd:ci
+          # Цикл, необходимый для того чтобы HTML успел прогрузиться перед проверкой
+          for i in $(seq 1 10); do 
+            if curl -sf http://localhost:8080 > /tmp/page.html; then break; fi
+            sleep 1
+          done
+          grep -n "Асриев Георгий Вадимович" page.html # Проверяем наличие некоторых строк на сайте
+          grep -n "GitHub: DeFchanels" page.html
+          grep -n "Docker Hub: georgyasr" page.html
+          echo "OK"
+      - name: Check CI results
+        if: always()
+        run: docker rm -f ci-cd || true
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Проверка что выполняется именно push в main
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
