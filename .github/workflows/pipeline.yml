@@ -31,9 +31,9 @@ jobs:
             if curl -sf http://localhost:8080 > /tmp/index.html; then break; fi
             sleep 1
           done
-          grep -n "Асриев Георгий Вадимович" page.html # Проверяем наличие некоторых строк на сайте
-          grep -n "GitHub: DeFchanels" page.html
-          grep -n "Docker Hub: georgyasr" page.html
+          grep -n "Асриев Георгий Вадимович" index.html # Проверяем наличие некоторых строк на сайте
+          grep -n "GitHub: DeFchanels" index.html
+          grep -n "Docker Hub: georgyasr" index.html
           echo "OK"
       - name: Check CI results
         if: always()
