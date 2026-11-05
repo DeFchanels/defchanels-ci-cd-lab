@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency: # Не дает пытаться запустить несколько версий сайта одновременно
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Генерим ссылку на сайт
+    steps:
+      - uses: actions/checkout@v4 # Скачиваем репозиторий
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact # Запаковываем файлы сайта в архив
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to Pages # Деплоим запакованный артифакт
+        id: deployment
+        uses: actions/deploy-pages@v4
