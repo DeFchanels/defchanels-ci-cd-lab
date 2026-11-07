@@ -36,6 +36,8 @@ jobs:
           grep -n "GitHub: DeFchanels" /tmp/page.html
           grep -n "Docker Hub: georgyasr" /tmp/page.html
           echo "OK"
+      - name: Hello
+        run: echo "Hello world"
       - name: Check CI results
         if: always()
         run: docker rm -f ci-cd || true
